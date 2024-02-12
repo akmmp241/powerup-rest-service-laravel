@@ -28,10 +28,10 @@ trait Responses
         ])->setStatusCode($code);
     }
 
-    public function baseWithError(bool $success, int $code, string $message, MessageBag $errors): JsonResponse
+    public function baseWithError(int $code, string $message, MessageBag $errors): JsonResponse
     {
         return Response::json([
-            "success" => $success,
+            "success" => false,
             "status_code" => $code,
             "message" => $message,
             "errors" => $errors

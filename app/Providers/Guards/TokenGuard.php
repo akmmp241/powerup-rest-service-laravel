@@ -36,7 +36,6 @@ class TokenGuard implements Guard
         }
 
         $token = $this->request->header("POWERUP-API-KEY");
-        Log::info($token);
         if ($token) {
             $this->user = $this->provider->retrieveByCredentials(["token" => $token]);
         }

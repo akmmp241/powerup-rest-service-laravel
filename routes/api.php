@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthenticationController;
+use App\Http\Controllers\Api\Products\ProductsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,10 +28,13 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-
     Route::prefix('/auth')->group(function () {
         Route::get('/user', [AuthenticationController::class, 'user']);
         Route::get('/send-verification', [AuthenticationController::class, 'sendVerification']);
         Route::post('/verify', [AuthenticationController::class, 'verify']);
+    });
+
+    Route::prefix('/products')->group(function () {
+        Route::get('/categories', [ProductsController::class, 'getCategories']);
     });
 });
