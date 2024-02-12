@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Api\Products;
 
 use App\Helpers\ResponseCode;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetOperatorsRequest;
 use App\Http\Resources\Products\CategoriesCollection;
+use App\Http\Resources\Products\OperatorsCollection;
 use App\Models\Category;
-use App\Services\Products\Categories\CategoriesService;
+use App\Models\Operator;
 use App\Traits\Responses;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Http;
 
 class ProductsController extends Controller
 {
@@ -36,6 +39,20 @@ class ProductsController extends Controller
             code: ResponseCode::HTTP_OK,
             message: "Success Get Product Categories",
             data: new CategoriesCollection(Category::query()->get())
+        );
+    }
+
+    public function getOperators(GetOperatorsRequest $request): JsonResponse
+    {
+        $categoryId = $request->validated()["category_id"];
+
+        $operators = Operator::query()->with("category")->where("category_id", $categoryId)->get();
+
+        return $this->baseWithData(
+            success: true,
+            code: ResponseCode::HTTP_OK,
+            message: "Success Get Product Operators",
+            data: new OperatorsCollection($operators)
         );
     }
 }

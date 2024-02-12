@@ -2,18 +2,21 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Category extends Model
+class Operator extends Model
 {
     use HasFactory;
 
+    protected $table = 'operators';
+
     protected $fillable = [
         "ref_id",
+        "category_id",
         "name",
+        "image",
     ];
 
     protected $casts = [
@@ -21,8 +24,8 @@ class Category extends Model
         "updated_at" => "datetime"
     ];
 
-    public function operators(): HasMany
+    public function category(): BelongsTo
     {
-        return $this->hasMany(Operator::class, "category_id");
+        return $this->belongsTo(Category::class, "category_id");
     }
 }

@@ -36,5 +36,6 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('/products')->group(function () {
         Route::get('/categories', [ProductsController::class, 'getCategories']);
+        Route::get('/operators', [ProductsController::class, 'getOperators']);
     });
 });
