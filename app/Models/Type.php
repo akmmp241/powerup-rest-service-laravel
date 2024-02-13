@@ -5,19 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Operator extends Model
+class Type extends Model
 {
     use HasFactory;
 
-    protected $table = 'operators';
+    protected $table = 'types';
 
     protected $fillable = [
         "ref_id",
-        "category_id",
+        "operator_id",
         "name",
-        "image",
+        "format_form"
     ];
 
     protected $casts = [
@@ -25,13 +24,8 @@ class Operator extends Model
         "updated_at" => "datetime"
     ];
 
-    public function category(): BelongsTo
+    public function operator(): BelongsTo
     {
-        return $this->belongsTo(Category::class, "category_id");
-    }
-
-    public function types(): HasMany
-    {
-        return $this->hasMany(Type::class, "operator_id");
+        return $this->belongsTo(Operator::class, "operator_id");
     }
 }

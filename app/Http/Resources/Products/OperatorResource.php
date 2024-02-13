@@ -11,7 +11,8 @@ class OperatorResource extends JsonResource
     {
         return [
             "id" => $this->id,
-            "refId" => $this->ref_id,
+            "ref_id" => $this->ref_id,
+            "category_id" => $this->category_id,
             "category_name" => $this->category->name,
             "name" => $this->name
         ];

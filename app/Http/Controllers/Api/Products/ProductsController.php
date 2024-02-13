@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api\Products;
 use App\Helpers\ResponseCode;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GetOperatorsRequest;
+use App\Http\Requests\GetTypesRequest;
 use App\Http\Resources\Products\CategoriesCollection;
 use App\Http\Resources\Products\OperatorsCollection;
+use App\Http\Resources\TypesCollection;
 use App\Models\Category;
 use App\Models\Operator;
+use App\Models\Type;
 use App\Traits\Responses;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
@@ -17,23 +20,8 @@ class ProductsController extends Controller
 {
     use Responses;
 
-    public function __construct(
-        private readonly CategoriesService $categoriesService,
-    )
-    {
-    }
-
     public function getCategories(): JsonResponse
     {
-        // get data from tokovoucher
-        $res = $this->categoriesService->getData();
-
-        // check if data need to update or insert new
-        $dataModel = Category::query()->select("ref_id", "name")->get();
-        if ($res->toArray() !== $dataModel->toArray()) {
-            $this->categoriesService->insert($res);
-        }
-
         return $this->baseWithData(
             success: true,
             code: ResponseCode::HTTP_OK,
@@ -54,5 +42,39 @@ class ProductsController extends Controller
             message: "Success Get Product Operators",
             data: new OperatorsCollection($operators)
         );
+    }
+
+    public function getTypes(GetTypesRequest $request): JsonResponse
+    {
+        $operatorId = $request->validated()["operator_id"];
+
+        $types = Type::query()->with(["operator"])->where("operator_id", $operatorId)->get();
+
+        return $this->baseWithData(
+            success: true,
+            code: ResponseCode::HTTP_OK,
+            message: "Success Get Product Types",
+            data: new TypesCollection($types)
+        );
+    }
+
+    public function getProducts()
+    {
+        $types = Type::query()->get();
+
+        $types->map(function ($val) {
+            $res = Http::withQueryParameters([
+                "member_code" => env("TOKOVOUCHER_MEMBER_CODE"),
+                "signature" => env("TOKOVOUCHER_SIGNATURE"),
+                "id_jenis" => $val["ref_id"]
+            ])->baseUrl(env("TOKOVOUCHER_BASE_URL"))
+                ->get("/member/produk/list")->json();
+
+            $data = collect($res["data"])->filter(function ($key) {
+                return $key["status"] !== 0;
+            })->map(function ($value) use ($val) {
+
+            });
+        });
     }
 }

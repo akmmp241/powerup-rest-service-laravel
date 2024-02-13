@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('operators', function (Blueprint $table) {
+        Schema::create('types', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('ref_id')->unsigned()->nullable();
-            $table->foreignId("category_id")->constrained("categories")->cascadeOnDelete()->cascadeOnUpdate();
+            $table->unsignedBigInteger("ref_id")->nullable();
+            $table->foreignId("operator_id")->constrained("operators")->cascadeOnDelete()->cascadeOnUpdate();
             $table->string("name", 200);
-            $table->text("image");
+            $table->json("format_form");
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('operators');
+        Schema::dropIfExists('types');
     }
 };
