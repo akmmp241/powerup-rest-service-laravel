@@ -4,17 +4,19 @@ namespace App\Http\Controllers\Api\Products;
 
 use App\Helpers\ResponseCode;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\GetOperatorsRequest;
-use App\Http\Requests\GetTypesRequest;
+use App\Http\Requests\Products\GetOperatorsRequest;
+use App\Http\Requests\Products\GetProductsRequest;
+use App\Http\Requests\Products\GetTypesRequest;
 use App\Http\Resources\Products\CategoriesCollection;
 use App\Http\Resources\Products\OperatorsCollection;
+use App\Http\Resources\Products\ProductCollection;
 use App\Http\Resources\TypesCollection;
 use App\Models\Category;
 use App\Models\Operator;
+use App\Models\Product;
 use App\Models\Type;
 use App\Traits\Responses;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Http;
 
 class ProductsController extends Controller
 {
@@ -58,23 +60,17 @@ class ProductsController extends Controller
         );
     }
 
-    public function getProducts()
+    public function getProducts(GetProductsRequest $request): JsonResponse
     {
-        $types = Type::query()->get();
+        $typeId = $request->validated()["type_id"];
 
-        $types->map(function ($val) {
-            $res = Http::withQueryParameters([
-                "member_code" => env("TOKOVOUCHER_MEMBER_CODE"),
-                "signature" => env("TOKOVOUCHER_SIGNATURE"),
-                "id_jenis" => $val["ref_id"]
-            ])->baseUrl(env("TOKOVOUCHER_BASE_URL"))
-                ->get("/member/produk/list")->json();
+        $products = Product::query()->with(["type"])->where("type_id", $typeId)->get();
 
-            $data = collect($res["data"])->filter(function ($key) {
-                return $key["status"] !== 0;
-            })->map(function ($value) use ($val) {
-
-            });
-        });
+        return $this->baseWithData(
+            success: true,
+            code: ResponseCode::HTTP_OK,
+            message: "Success Get Products",
+            data: new ProductCollection($products)
+        );
     }
 }

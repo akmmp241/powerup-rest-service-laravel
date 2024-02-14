@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Products;
 
 use App\Helpers\ResponseCode;
 use App\Traits\Responses;
