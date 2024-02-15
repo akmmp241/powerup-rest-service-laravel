@@ -2,22 +2,18 @@
 
 namespace Database\Factories;
 
+use App\Models\Operator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Operator>
- */
 class OperatorFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = Operator::class;
     public function definition(): array
     {
         return [
-            //
+            "ref_id" => fake()->numberBetween(0, 100),
+            "name" => fake()->name(),
+            "image" => fake()->imageUrl()
         ];
     }
 }

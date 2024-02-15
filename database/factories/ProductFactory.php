@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,15 +10,14 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ProductFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = Product::class;
     public function definition(): array
     {
         return [
-            //
+            "ref_id" => fake()->numberBetween(1, 100),
+            "code" => fake()->languageCode(),
+            "name" => fake()->name(),
+            "description" => fake()->sentence()
         ];
     }
 }

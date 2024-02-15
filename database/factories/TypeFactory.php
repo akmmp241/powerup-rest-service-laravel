@@ -2,22 +2,22 @@
 
 namespace Database\Factories;
 
+use App\Models\Type;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Type>
  */
-class TypesFactory extends Factory
+class TypeFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = Type::class;
+
     public function definition(): array
     {
         return [
-            //
+            "ref_id" => fake()->numberBetween(1, 100),
+            "name" => fake()->name(),
+            "format_form" => fake()->sentence()
         ];
     }
 }
