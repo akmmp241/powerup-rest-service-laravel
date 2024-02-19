@@ -2,8 +2,10 @@
 
 namespace Tests\Feature\Products;
 
+use App\Http\Resources\Products\BannersCollection;
 use App\Http\Resources\Products\Homepage\PromosCollection;
 use App\Http\Resources\Products\PopularProductsCollection;
+use App\Models\Banner;
 use App\Models\Operator;
 use App\Models\PopularProducts;
 use App\Models\Product;
@@ -11,8 +13,6 @@ use App\Models\Promo;
 use App\Models\User;
 use Database\Seeders\PopularProductsSeeder;
 use Database\Seeders\PromoSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class HomepageTest extends TestCase
@@ -95,5 +95,36 @@ class HomepageTest extends TestCase
         PopularProducts::factory()->for($operator)->create();
 
         self::assertInstanceOf(PopularProducts::class, $operator->popular);
+    }
+
+    public function testSuccessGetBanners()
+    {
+        Banner::factory()->count(5)->create();
+        $user = User::factory()->create();
+        $banners = Banner::query()->get();
+
+        $this->actingAs($user)
+            ->withHeaders([
+                "POWERUP-API-KEY" => $user->token
+            ])
+            ->get("/api/products/home/banners")
+            ->assertStatus(200)
+            ->assertJson([
+                "success" => true,
+                "status_code" => 200,
+                "message" => "Success Get Images",
+                "data" => (new BannersCollection($banners))->jsonSerialize()
+            ]);
+    }
+
+    public function testUnauthorizedGetBanners()
+    {
+        $this->get("/api/products/home/banners")
+            ->assertStatus(401)
+            ->assertJson([
+                "success" => false,
+                "status_code" => 401,
+                "message" => "You are not allowed to perform this action"
+            ]);
     }
 }
