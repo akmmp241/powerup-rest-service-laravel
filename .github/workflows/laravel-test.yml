@@ -33,3 +33,8 @@ jobs:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/powerup_db.sqlite
         run: vendor/bin/phpunit
+      - name: Execute tests Feature Test
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/powerup_db.sqlite
+        run: php artisan test --coverage
