@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthenticationController;
+use App\Http\Controllers\Api\Products\HomepageController;
 use App\Http\Controllers\Api\Products\ProductsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -39,5 +40,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/operators', [ProductsController::class, 'getOperators']);
         Route::get('/types', [ProductsController::class, 'getTypes']);
         Route::get('', [ProductsController::class, 'getProducts']);
+        Route::get('/promos', [HomepageController::class, 'getPromos']);
     });
 });

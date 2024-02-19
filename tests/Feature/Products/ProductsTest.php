@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Products;
 
 use App\Http\Resources\Products\CategoriesCollection;
 use App\Http\Resources\Products\OperatorsCollection;
 use App\Http\Resources\Products\ProductCollection;
-use App\Http\Resources\TypesCollection;
+use App\Http\Resources\Products\TypesCollection;
 use App\Models\Category;
 use App\Models\Operator;
 use App\Models\Product;
