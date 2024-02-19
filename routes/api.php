@@ -41,5 +41,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/types', [ProductsController::class, 'getTypes']);
         Route::get('', [ProductsController::class, 'getProducts']);
         Route::get('/promos', [HomepageController::class, 'getPromos']);
+        Route::get('/populars', [HomepageController::class, 'getPopularProducts']);
     });
 });
