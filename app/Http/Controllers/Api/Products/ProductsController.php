@@ -8,6 +8,7 @@ use App\Http\Requests\Products\GetOperatorsRequest;
 use App\Http\Requests\Products\GetProductsRequest;
 use App\Http\Requests\Products\GetTypesRequest;
 use App\Http\Resources\Products\CategoriesCollection;
+use App\Http\Resources\Products\OperatorResource;
 use App\Http\Resources\Products\OperatorsCollection;
 use App\Http\Resources\Products\ProductCollection;
 use App\Http\Resources\Products\TypesCollection;
@@ -71,6 +72,26 @@ class ProductsController extends Controller
             code: ResponseCode::HTTP_OK,
             message: "Success Get Products",
             data: new ProductCollection($products)
+        );
+    }
+
+    public function getSingleOperator(string $id): JsonResponse
+    {
+        $operator = Operator::query()->with("category")->where("id", $id)->first();
+
+        if (!$operator) {
+            return $this->base(
+                success: false,
+                code: ResponseCode::HTTP_NOT_FOUND,
+                message: "Not Found"
+            );
+        }
+
+        return $this->baseWithData(
+            success: true,
+            code: ResponseCode::HTTP_OK,
+            message: "Success Get Operator",
+            data: new OperatorResource($operator)
         );
     }
 }

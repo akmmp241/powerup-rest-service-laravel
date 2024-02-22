@@ -3,6 +3,7 @@
 namespace Tests\Feature\Products;
 
 use App\Http\Resources\Products\CategoriesCollection;
+use App\Http\Resources\Products\OperatorResource;
 use App\Http\Resources\Products\OperatorsCollection;
 use App\Http\Resources\Products\ProductCollection;
 use App\Http\Resources\Products\TypesCollection;
@@ -197,6 +198,56 @@ class ProductsTest extends TestCase
                 "success" => false,
                 "status_code" => 401,
                 "message" => "You are not allowed to perform this action"
+            ]);
+    }
+
+    public function testSuccessGetSingleOperator()
+    {
+        $user = User::factory()->create();
+        $this->seed([OperatorSeeder::class]);
+        $operator = Operator::query()->first();
+
+        $this->actingAs($user)
+            ->withHeaders([
+                "POWERUP-API-KEY" => $user->token
+            ])
+            ->get("/api/products/operators/$operator->id")
+            ->assertStatus(200)
+            ->assertJson([
+                "success" => true,
+                "status_code" => 200,
+                "message" => "Success Get Operator",
+                "data" => (new OperatorResource($operator))->jsonSerialize()
+            ]);
+    }
+
+    public function testUnauthorizedGetSingleOperator()
+    {
+        $this->get("/api/products/operators/1")
+            ->assertStatus(401)
+            ->assertJson([
+                "success" => false,
+                "status_code" => 401,
+                "message" => "You are not allowed to perform this action"
+            ]);
+    }
+
+    public function testIdNotFoundGetSingleOperator()
+    {
+        $user = User::factory()->create();
+        $this->seed([OperatorSeeder::class]);
+        $operator = Operator::query()->first();
+
+        $this->actingAs($user)
+            ->withHeaders([
+                "POWERUP-API-KEY" => $user->token
+            ])
+            ->get("/api/products/operators/9999")
+            ->assertStatus(404)
+            ->assertJson([
+                "success" => false,
+                "status_code" => 404,
+                "message" => "Not Found"
             ]);
     }
 }

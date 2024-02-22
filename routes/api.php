@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('/products')->group(function () {
         Route::get('/categories', [ProductsController::class, 'getCategories']);
         Route::get('/operators', [ProductsController::class, 'getOperators']);
+        Route::get('/operators/{id}', [ProductsController::class, 'getSingleOperator']);
         Route::get('/types', [ProductsController::class, 'getTypes']);
         Route::get('', [ProductsController::class, 'getProducts']);
         Route::get('/promos', [HomepageController::class, 'getPromos']);
