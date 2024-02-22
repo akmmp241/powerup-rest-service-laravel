@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthenticationController;
+use App\Http\Controllers\Api\Payment\PaymentPageController;
 use App\Http\Controllers\Api\Products\HomepageController;
 use App\Http\Controllers\Api\Products\ProductsController;
 use Illuminate\Support\Facades\Route;
@@ -43,5 +44,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/promos', [HomepageController::class, 'getPromos']);
         Route::get('/populars', [HomepageController::class, 'getPopularProducts']);
         Route::get('/home/banners', [HomepageController::class, 'getHomeBanners']);
+    });
+
+    Route::prefix("/payments")->group(function () {
+        Route::get("/methods", [PaymentPageController::class, 'getPaymentMethods']);
     });
 });
