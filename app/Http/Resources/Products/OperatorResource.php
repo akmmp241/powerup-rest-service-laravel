@@ -14,7 +14,8 @@ class OperatorResource extends JsonResource
             "ref_id" => $this->ref_id,
             "category_id" => $this->category_id,
             "category_name" => $this->category->name,
-            "name" => $this->name
+            "name" => $this->name,
+            "image" => $this->image
         ];
     }
 }

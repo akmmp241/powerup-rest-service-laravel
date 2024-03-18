@@ -16,7 +16,10 @@ return new class extends Migration
             $table->bigInteger('ref_id')->unsigned()->nullable();
             $table->foreignId("category_id")->constrained("categories")->cascadeOnDelete()->cascadeOnUpdate();
             $table->string("name", 200);
-            $table->text("image");
+            $table->string("slug")->nullable();
+            $table->text("image")->nullable();
+            $table->text("banner")->nullable();
+            $table->text("description")->nullable();
             $table->timestamps();
         });
     }

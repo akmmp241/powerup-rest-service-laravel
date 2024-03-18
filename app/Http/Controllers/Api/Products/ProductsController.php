@@ -18,6 +18,7 @@ use App\Models\Product;
 use App\Models\Type;
 use App\Traits\Responses;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Response;
 
 class ProductsController extends Controller
 {
@@ -37,14 +38,20 @@ class ProductsController extends Controller
     {
         $categoryId = $request->validated()["category_id"];
 
-        $operators = Operator::query()->with("category")->where("category_id", $categoryId)->get();
+        $operators = Operator::query()->with("category")->where("category_id", $categoryId)->paginate(18);
 
-        return $this->baseWithData(
-            success: true,
-            code: ResponseCode::HTTP_OK,
-            message: "Success Get Product Operators",
-            data: new OperatorsCollection($operators)
-        );
+        $totalPage = round($operators->total() / $operators->perPage());
+
+        return Response::json([
+            "success" => true,
+            "code" => ResponseCode::HTTP_OK,
+            "message" => "Success Get Product Operators",
+            "total_page" => $totalPage,
+            "current_page" => $operators->currentPage(),
+            "data" => new OperatorsCollection($operators),
+            "per_page" => $operators->perPage(),
+            "total" => $operators->total(),
+        ]);
     }
 
     public function getTypes(GetTypesRequest $request): JsonResponse

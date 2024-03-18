@@ -15,6 +15,7 @@ class PopularProductResource extends JsonResource
             "operator_name" => $this->operator->name,
             "title" => $this->title,
             "image_url" => $this->image,
+            "description" => $this->description,
             "link" => $this->link
         ];
     }
