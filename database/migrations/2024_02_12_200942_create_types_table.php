@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger("ref_id")->nullable();
             $table->foreignId("operator_id")->constrained("operators")->cascadeOnDelete()->cascadeOnUpdate();
             $table->string("name", 200);
-            $table->json("format_form");
+            $table->json("format_form")->nullable();
             $table->timestamps();
         });
     }

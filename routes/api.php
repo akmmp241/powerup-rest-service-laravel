@@ -25,9 +25,17 @@ Route::middleware('guest')->group(function () {
         Route::post('/forget-password', [AuthenticationController::class, 'sendForgetPassword']);
         Route::post('/reset-password', [AuthenticationController::class, 'getIdForResetPassword']);
         Route::patch('/reset-password', [AuthenticationController::class, 'resetPassword']);
+
+    });
+
+    Route::prefix("/products")->group(function () {
+        Route::get('/home/banners', [HomepageController::class, 'getHomeBanners']);
+        Route::get('/populars', [HomepageController::class, 'getPopularProducts']);
+        Route::get('/promos', [HomepageController::class, 'getPromos']);
+        Route::get('/categories', [ProductsController::class, 'getCategories']);
+        Route::get('/operators', [ProductsController::class, 'getOperators']);
     });
 });
-
 Route::middleware('auth')->group(function () {
     Route::prefix('/auth')->group(function () {
         Route::get('/user', [AuthenticationController::class, 'user']);
@@ -36,14 +44,9 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::prefix('/products')->group(function () {
-        Route::get('/categories', [ProductsController::class, 'getCategories']);
-        Route::get('/operators', [ProductsController::class, 'getOperators']);
         Route::get('/operators/{id}', [ProductsController::class, 'getSingleOperator']);
         Route::get('/types', [ProductsController::class, 'getTypes']);
         Route::get('', [ProductsController::class, 'getProducts']);
-        Route::get('/promos', [HomepageController::class, 'getPromos']);
-        Route::get('/populars', [HomepageController::class, 'getPopularProducts']);
-        Route::get('/home/banners', [HomepageController::class, 'getHomeBanners']);
     });
 
     Route::prefix("/payments")->group(function () {
