@@ -17,7 +17,7 @@ class TypeFactory extends Factory
         return [
             "ref_id" => fake()->numberBetween(1, 100),
             "name" => fake()->name(),
-            "format_form" => fake()->sentence()
+            "format_form" => json_encode(["test" => "test"])
         ];
     }
 }

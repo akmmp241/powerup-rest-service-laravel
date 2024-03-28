@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Icon;
 use App\Models\Product;
 use App\Models\Type;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -16,6 +17,7 @@ class ProductSeeder extends Seeder
     {
         $this->call(TypesSeeder::class);
         $type = Type::query()->first();
-        Product::factory()->count(10)->for($type)->create();
+        $icon = Icon::factory()->create();
+        Product::factory()->count(10)->for($type)->for($icon)->create();
     }
 }

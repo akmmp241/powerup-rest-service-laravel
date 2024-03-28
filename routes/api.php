@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\AuthenticationController;
+use App\Http\Controllers\Api\Payment\PaymentController;
 use App\Http\Controllers\Api\Payment\PaymentPageController;
+use App\Http\Controllers\Api\Payment\XenditWebhookController;
 use App\Http\Controllers\Api\Products\HomepageController;
 use App\Http\Controllers\Api\Products\ProductsController;
+use App\Http\Middleware\AuthorizeXenditWebhook;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,7 +31,7 @@ Route::middleware('guest')->group(function () {
 
     });
 
-    Route::prefix("/products")->group(function () {
+    Route::prefix('/products')->group(function () {
         Route::get('/home/banners', [HomepageController::class, 'getHomeBanners']);
         Route::get('/populars', [HomepageController::class, 'getPopularProducts']);
         Route::get('/promos', [HomepageController::class, 'getPromos']);
@@ -36,6 +39,7 @@ Route::middleware('guest')->group(function () {
         Route::get('/operators', [ProductsController::class, 'getOperators']);
     });
 });
+
 Route::middleware('auth')->group(function () {
     Route::prefix('/auth')->group(function () {
         Route::get('/user', [AuthenticationController::class, 'user']);
@@ -49,7 +53,20 @@ Route::middleware('auth')->group(function () {
         Route::get('', [ProductsController::class, 'getProducts']);
     });
 
-    Route::prefix("/payments")->group(function () {
-        Route::get("/methods", [PaymentPageController::class, 'getPaymentMethods']);
+    Route::prefix('/payments')->group(function () {
+        Route::get('/methods', [PaymentPageController::class, 'getPaymentMethods']);
     });
+
+    Route::prefix('/transaction')->group(function () {
+        Route::post('/ewallet', [PaymentController::class, 'charge']);
+    });
+
+    Route::post("/transaction/charge", [PaymentController::class, 'charge']);
+});
+
+Route::middleware([AuthorizeXenditWebhook::class])->group(function () {
+    Route::post("/transaction/success", [XenditWebhookController::class, 'paymentSucceeded']);
+    Route::post("/transaction/failed", [XenditWebhookController::class, 'paymentFailed']);
+    Route::post("/transaction/pending", [XenditWebhookController::class, 'paymentPending']);
+    Route::post('/transaction/channel-status', [XenditWebhookController::class, 'channelStatus']);
 });

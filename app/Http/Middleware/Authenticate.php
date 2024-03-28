@@ -19,6 +19,7 @@ class Authenticate
             return $next($request);
         }
 
+        // Failed Authorization
         throw new HttpResponseException($this->base(
             success: false,
             code: ResponseCode::HTTP_UNAUTHORIZED,

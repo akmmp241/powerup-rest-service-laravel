@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Authentication;
 
+use App\Exceptions\FailedValidationException;
 use App\Helpers\ResponseCode;
 use App\Traits\Responses;
 use Illuminate\Contracts\Validation\Validator;
@@ -28,11 +29,6 @@ class ResetPasswordRequest extends FormRequest
 
     protected function failedValidation(Validator $validator): void
     {
-        throw new HttpResponseException($this->baseWithError(
-            success: false,
-            code: ResponseCode::HTTP_BAD_REQUEST,
-            message: "Bad Request",
-            errors: $validator->errors()
-        ));
+        throw new FailedValidationException($validator);
     }
 }

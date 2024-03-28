@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Products;
 
+use App\Exceptions\FailedValidationException;
 use App\Helpers\ResponseCode;
 use App\Traits\Responses;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -27,10 +28,6 @@ class GetProductsRequest extends FormRequest
 
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException($this->baseWithError(
-            code: ResponseCode::HTTP_BAD_REQUEST,
-            message: "Bad Request",
-            errors: $validator->errors()
-        ));
+        throw new FailedValidationException($validator);
     }
 }

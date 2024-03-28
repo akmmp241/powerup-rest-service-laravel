@@ -16,7 +16,6 @@ use App\Jobs\SendMailJob;
 use App\Mail\VerifyEmail;
 use App\Models\ResetPassword;
 use App\Models\User;
-use App\Traits\Responses;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Env;
@@ -28,8 +27,6 @@ use Illuminate\Support\Str;
 
 class AuthenticationController extends Controller
 {
-    use Responses;
-
     public function register(UserRegisterRequest $request): JsonResponse
     {
         $data = $request->validated();

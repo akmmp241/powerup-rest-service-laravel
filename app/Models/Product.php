@@ -38,6 +38,11 @@ class Product extends Model
         return $this->belongsTo(Type::class, "type_id");
     }
 
+    public function icon(): BelongsTo
+    {
+        return $this->belongsTo(Icon::class, "icon_id");
+    }
+
     public function price(): ?string
     {
         try {
@@ -62,5 +67,7 @@ class Product extends Model
 
             return $data["price"];
         }
+
+        return null;
     }
 }

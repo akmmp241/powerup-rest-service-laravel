@@ -13,7 +13,9 @@ class OperatorFactory extends Factory
         return [
             "ref_id" => fake()->numberBetween(0, 100),
             "name" => fake()->name(),
-            "image" => fake()->imageUrl()
+            "slug" => fake()->slug(4),
+            "image" => fake()->imageUrl(),
+            "banner" => fake()->imageUrl()
         ];
     }
 }

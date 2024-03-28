@@ -7,6 +7,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
+use Xendit\Configuration;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        Configuration::setXenditKey(config("xendit.api-key"));
     }
 
     /**

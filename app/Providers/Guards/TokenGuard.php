@@ -9,7 +9,6 @@ use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 
 class TokenGuard implements Guard
 {
@@ -37,10 +36,24 @@ class TokenGuard implements Guard
 
         $token = $this->request->header("POWERUP-API-KEY");
         if ($token) {
-            $this->user = $this->provider->retrieveByCredentials(["token" => $token]);
+            $this->user = $this->provider->retrieveByCredentials(["personal_token" => $token]);
         }
 
-        return $this->user;
+        return $this->user ?? null;
+    }
+
+    public function id()
+    {
+        if ($this->user != null) {
+            return $this->user->uuid;
+        }
+
+        $token = $this->request->header("POWERUP-API-KEY");
+        if ($token) {
+            $this->user = $this->provider->retrieveByCredentials(["personal_token" => $token]);
+        }
+
+        return $this->user->uuid ?? null;
     }
 
     public function validate(array $credentials = []): bool
