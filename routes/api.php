@@ -20,6 +20,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/scrap', [ProductsController::class, 'scrapOperator']);
+Route::post('/scrap', [ProductsController::class, 'scrapTypes']);
+
 Route::middleware('guest')->group(function () {
     Route::prefix('/auth')->group(function () {
         Route::post('/register', [AuthenticationController::class, 'register']);
@@ -31,12 +34,19 @@ Route::middleware('guest')->group(function () {
 
     });
 
+    Route::prefix('/payments')->group(function () {
+        Route::get('/methods', [PaymentPageController::class, 'getPaymentMethods']);
+    });
+
     Route::prefix('/products')->group(function () {
         Route::get('/home/banners', [HomepageController::class, 'getHomeBanners']);
         Route::get('/populars', [HomepageController::class, 'getPopularProducts']);
         Route::get('/promos', [HomepageController::class, 'getPromos']);
         Route::get('/categories', [ProductsController::class, 'getCategories']);
         Route::get('/operators', [ProductsController::class, 'getOperators']);
+        Route::get('/operators/{id}', [ProductsController::class, 'getSingleOperator']);
+        Route::get('/types', [ProductsController::class, 'getTypes']);
+        Route::get('', [ProductsController::class, 'getProducts']);
     });
 });
 
@@ -45,16 +55,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/user', [AuthenticationController::class, 'user']);
         Route::get('/send-verification', [AuthenticationController::class, 'sendVerification']);
         Route::post('/verify', [AuthenticationController::class, 'verify']);
-    });
-
-    Route::prefix('/products')->group(function () {
-        Route::get('/operators/{id}', [ProductsController::class, 'getSingleOperator']);
-        Route::get('/types', [ProductsController::class, 'getTypes']);
-        Route::get('', [ProductsController::class, 'getProducts']);
-    });
-
-    Route::prefix('/payments')->group(function () {
-        Route::get('/methods', [PaymentPageController::class, 'getPaymentMethods']);
     });
 
     Route::prefix('/transaction')->group(function () {

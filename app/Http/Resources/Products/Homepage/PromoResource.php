@@ -11,14 +11,14 @@ class PromoResource extends JsonResource
     public function toArray(Request $request): array
     {
         $percentage = $this->percentage;
-        $price = $this->product->price();
+        $price = 10000;
 
         $finalPrice = round($price - (round($price) * ($percentage/100)));
 
         return [
             "id" => $this->id,
             "product_id" => $this->product_id,
-            "product_name" => $this->product->name,
+            "product_name" => "hai",
             "title" => $this->title,
             "description" => $this->description,
             "percentage" => $percentage,

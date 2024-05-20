@@ -7,20 +7,17 @@ use App\Helpers\ResponseCode;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Payments\ChargeRequest;
 use App\Models\Product;
-use App\Services\Payment\PaymentServiceImplement;
-use App\Xendit\Charge;
+use App\Services\Payment\XenditChargeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 
 class PaymentController extends Controller
 {
-    use Charge;
-
-    private PaymentServiceImplement $paymentServiceImplement;
+    private XenditChargeService $xenditChargeService;
 
     public function __construct()
     {
-        $this->paymentServiceImplement = new PaymentServiceImplement();
+        $this->xenditChargeService = new XenditChargeService();
     }
 
     public function charge(ChargeRequest $request): JsonResponse
@@ -36,16 +33,16 @@ class PaymentController extends Controller
         $transactionId = Str::random(40);
 
         // set the transaction ID
-        $this->paymentServiceImplement->setTransactionId($transactionId);
+        $this->xenditChargeService->setTransactionId($transactionId);
 
         // create transaction in database
-        $transaction = $this->paymentServiceImplement->createTransaction($data);
+        $transaction = $this->xenditChargeService->createTransaction($data);
 
-        // create xendit request payload
-        $payment_request_parameters = $this->paymentServiceImplement->chargeRequestPayload($transaction, $data["channel_code"]);
+        // set xendit request payload
+        $this->xenditChargeService->setRequestPayload($transaction, $data["channel_code"]);
 
         // create charge in xendit
-        $res = $this->chargeWithEwallet($payment_request_parameters);
+        $res = $this->xenditChargeService->createCharge();
         $payload = $res->json();
 
         // save transaction
@@ -53,17 +50,8 @@ class PaymentController extends Controller
         $transaction->payment_channel_status = $payload["payment_method"]["status"];
         $transaction->save();
 
-        $responsePayload = [
-            "transaction_id" => $transactionId,
-            "product_name" => $transaction->product_name,
-            "destination" => $transaction->destination,
-            "server_id" => $transaction->server_id,
-            "payment_method" => $transaction->payment_method,
-            "total" => $transaction->total,
-            "status" => $transaction->status,
-            "created_at" => $transaction->created_at,
-            "updated_at" => $transaction->updated_at
-        ];
+        // load response payload
+        $responsePayload = $this->xenditChargeService->createResponsePayload($transaction);
 
         return $this->baseWithData(
             true,

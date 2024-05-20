@@ -20,7 +20,6 @@ class XenditWebhookController extends Controller
     public function channelStatus(Request $request): JsonResponse
     {
         $payload = $request->get("data");
-        Log::info($payload);
 
         $this->xenditWebhookService->handleChannelStatus($payload);
 
@@ -30,7 +29,6 @@ class XenditWebhookController extends Controller
     public function paymentSucceeded(Request $request): JsonResponse
     {
         $payload = $request->get("data");
-        Log::info($payload);
 
         $this->xenditWebhookService->handleSucceeded($payload);
 
@@ -40,7 +38,6 @@ class XenditWebhookController extends Controller
     public function paymentFailed(Request $request): JsonResponse
     {
         $payload = $request->get("data");
-        Log::info($payload);
 
         $this->xenditWebhookService->handleFailed($payload);
 

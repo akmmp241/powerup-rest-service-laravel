@@ -17,6 +17,7 @@ class Product extends Model
 
     protected $fillable = [
         "ref_id",
+        "icon_id",
         "type_id",
         "code",
         "name",

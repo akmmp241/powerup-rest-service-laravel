@@ -2,21 +2,42 @@
 
 namespace App\Services\Payment;
 
+use App\Exceptions\FailedCreateTransactionException;
 use App\Models\Transaction;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Xendit\PaymentMethod\EWalletChannelCode;
 use Xendit\PaymentMethod\OverTheCounterChannelCode;
 use Xendit\PaymentRequest\QRCodeChannelCode;
 use Xendit\PaymentRequest\VirtualAccountChannelCode;
 
-class PaymentServiceImplement
+class XenditChargeService
 {
     private string $transactionId;
+
+    private array $requestPayload;
 
     public function setTransactionId(string $transactionId): void
     {
         $this->transactionId = $transactionId;
+    }
+
+    public function setRequestPayload(Transaction $transaction, string $channelCode): void
+    {
+        $paymentMethod = $this->setPaymentMethod($channelCode, $transaction);
+
+        $this->requestPayload = [
+            "currency" => "IDR",
+            "amount" => $transaction->total,
+            "reference_id" => $this->transactionId,
+            "checkout_method" => "ONE_TIME_PAYMENT",
+            "channel_code" => $channelCode,
+            "country" => "ID",
+            "payment_method" => $paymentMethod
+        ];
     }
 
     public function createTransaction(array $data): Transaction
@@ -36,19 +57,20 @@ class PaymentServiceImplement
         return $transaction;
     }
 
-    public function chargeRequestPayload(Transaction $transaction, string $channelCode): array
+    public function createCharge(): Response
     {
-        $paymentMethod = $this->setPaymentMethod($channelCode, $transaction);
-
-        return [
-            "currency" => "IDR",
-            "amount" => $transaction->total,
-            "reference_id" => $this->transactionId,
-            "checkout_method" => "ONE_TIME_PAYMENT",
-            "channel_code" => $channelCode,
-            "country" => "ID",
-            "payment_method" => $paymentMethod
-        ];
+        try {
+            return Http::asJson()->timeout(15)->retry(3, 500)->withHeaders([
+                "Authorization" => "Basic " . base64_encode(env('XENDIT_API_KEY') . ':'),
+            ])->accept("application/json")
+                ->contentType("application/json")
+                ->baseUrl(config("xendit.base-url"))
+                ->post("/payment_requests", $this->requestPayload)
+                ->throw();
+        } catch (RequestException $e) {
+            Log::info($e->response->json());
+            throw new FailedCreateTransactionException($e->response);
+        }
     }
 
     private function setPaymentMethod(string $channelCode, Transaction $transaction): ?array
@@ -135,6 +157,21 @@ class PaymentServiceImplement
                     "customer_name" => "POWERUP"
                 ]
             ]
+        ];
+    }
+
+    public function createResponsePayload(Transaction $transaction): array
+    {
+        return [
+            "transaction_id" => $this->transactionId,
+            "product_name" => $transaction->product_name,
+            "destination" => $transaction->destination,
+            "server_id" => $transaction->server_id,
+            "payment_method" => $transaction->payment_method,
+            "total" => $transaction->total,
+            "status" => $transaction->status,
+            "created_at" => $transaction->created_at,
+            "updated_at" => $transaction->updated_at
         ];
     }
 }

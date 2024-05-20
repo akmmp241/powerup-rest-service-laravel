@@ -15,6 +15,7 @@ class OperatorResource extends JsonResource
             "category_id" => $this->category_id,
             "category_name" => $this->category->name,
             "name" => $this->name,
+            "slug" => str_replace(" ", "-", strtolower($this->name)),
             "image" => $this->image
         ];
     }

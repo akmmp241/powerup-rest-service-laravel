@@ -18,7 +18,10 @@ class Operator extends Model
         "ref_id",
         "category_id",
         "name",
+        "slug",
         "image",
+        "banner",
+        "description",
     ];
 
     protected $casts = [
