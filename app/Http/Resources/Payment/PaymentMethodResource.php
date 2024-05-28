@@ -14,6 +14,7 @@ class PaymentMethodResource extends JsonResource
             "type" => $this->type,
             "channel_code" => $this->channel_code,
             "name" => $this->name,
+            "charge" => $this->charge,
             "icon" => $this->icon,
             "object" => json_encode($this->object)
         ];

@@ -3,9 +3,11 @@
 use App\Http\Controllers\Api\AuthenticationController;
 use App\Http\Controllers\Api\Payment\PaymentController;
 use App\Http\Controllers\Api\Payment\PaymentPageController;
+use App\Http\Controllers\Api\Payment\TokovoucherWebhookController;
 use App\Http\Controllers\Api\Payment\XenditWebhookController;
 use App\Http\Controllers\Api\Products\HomepageController;
 use App\Http\Controllers\Api\Products\ProductsController;
+use App\Http\Middleware\AuthorizeTokoVoucherWebhook;
 use App\Http\Middleware\AuthorizeXenditWebhook;
 use Illuminate\Support\Facades\Route;
 
@@ -48,6 +50,8 @@ Route::middleware('guest')->group(function () {
         Route::get('/types', [ProductsController::class, 'getTypes']);
         Route::get('', [ProductsController::class, 'getProducts']);
     });
+
+    Route::post("/transaction/charge", [PaymentController::class, 'charge']);
 });
 
 Route::middleware('auth')->group(function () {
@@ -60,8 +64,6 @@ Route::middleware('auth')->group(function () {
     Route::prefix('/transaction')->group(function () {
         Route::post('/ewallet', [PaymentController::class, 'charge']);
     });
-
-    Route::post("/transaction/charge", [PaymentController::class, 'charge']);
 });
 
 Route::middleware([AuthorizeXenditWebhook::class])->group(function () {
@@ -70,3 +72,5 @@ Route::middleware([AuthorizeXenditWebhook::class])->group(function () {
     Route::post("/transaction/pending", [XenditWebhookController::class, 'paymentPending']);
     Route::post('/transaction/channel-status', [XenditWebhookController::class, 'channelStatus']);
 });
+
+Route::post("/transaction/status", [TokovoucherWebhookController::class, 'handle'])->middleware([AuthorizeTokoVoucherWebhook::class]);

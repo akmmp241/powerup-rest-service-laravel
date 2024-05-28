@@ -45,8 +45,8 @@ class XenditChargeService
         $transaction = new Transaction();
         $transaction->id = $this->transactionId;
         $transaction->user_id = Auth::check() ? Auth::id() : null;
-        $transaction->mobile_number = $data["mobile_number"];
-        $transaction->product_id = $data["product_id"];
+        $transaction->email = $data["email"];
+        $transaction->product_code = $data["product_code"];
         $transaction->product_name = $data["product_name"];
         $transaction->destination = $data["destination"];
         $transaction->server_id = $data["server_id"] ?? null;

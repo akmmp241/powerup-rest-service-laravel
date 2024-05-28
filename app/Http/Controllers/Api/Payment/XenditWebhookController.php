@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Services\Payment\XenditWebhookService;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -28,11 +29,16 @@ class XenditWebhookController extends Controller
 
     public function paymentSucceeded(Request $request): JsonResponse
     {
+        Log::info($request);
         $payload = $request->get("data");
 
-        $this->xenditWebhookService->handleSucceeded($payload);
+        try {
+            $this->xenditWebhookService->handleSucceeded($payload);
+        } catch (HttpResponseException $e) {
+            throw new HttpResponseException($e->getResponse());
+        }
 
-        return $this->base(true, 200, "Success");
+        return $this->base(true, 200, "Transaction Paid. Now Charge to Tokovoucher");
     }
 
     public function paymentFailed(Request $request): JsonResponse

@@ -15,7 +15,8 @@ class Transaction extends Model
     protected $fillable = [
         "id",
         "user_id",
-        "product_id",
+        "email",
+        "product_code",
         "product_name",
         "destination",
         "server_id",
@@ -23,6 +24,5 @@ class Transaction extends Model
         "total",
         "status",
         "failure_code",
-        "mobile_number"
     ];
 }

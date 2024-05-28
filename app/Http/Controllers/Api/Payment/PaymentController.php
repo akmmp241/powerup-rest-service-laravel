@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Api\Payment;
 
-use App\Exceptions\ProductNotFoundException;
 use App\Helpers\ResponseCode;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Payments\ChargeRequest;
-use App\Models\Product;
 use App\Services\Payment\XenditChargeService;
+use App\Tokovoucher\TokoVoucher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 
 class PaymentController extends Controller
 {
+    use TokoVoucher;
+
     private XenditChargeService $xenditChargeService;
 
     public function __construct()
@@ -23,11 +24,7 @@ class PaymentController extends Controller
     public function charge(ChargeRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $product = Product::query()->find($data["product_id"]);
-
-        if (is_null($product)) {
-            throw new ProductNotFoundException();
-        }
+        $product = $this->getProduct($data["product_code"]);
 
         $data["product_name"] = $product->name;
         $transactionId = Str::random(40);

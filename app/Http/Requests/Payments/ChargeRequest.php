@@ -17,11 +17,12 @@ class ChargeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "product_id" => ["required", "numeric"],
-            "destination" => ["required", "numeric"],
+            "product_code" => ["required"],
+            "destination" => ["required"],
+            "server_id" => [],
             "channel_code" => ["required"],
             "total" => ["required", "numeric"],
-            "mobile_number" => ["required"]
+            "email" => []
         ];
     }
 

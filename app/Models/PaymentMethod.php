@@ -15,6 +15,7 @@ class PaymentMethod extends Model
         "type",
         "channel_code",
         "name",
+        "charge",
         "icon",
         "object"
     ];
