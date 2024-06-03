@@ -25,7 +25,7 @@ class PromoResource extends JsonResource
             "product_url" => $this->product_url,
             "product_price" => $price,
             "final_price" => $finalPrice,
-            "image_url" => $this->image_url,
+            "image_url" => env("APP_URL") . this->image_url,
         ];
     }
 }
