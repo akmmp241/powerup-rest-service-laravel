@@ -2,10 +2,10 @@
 
 namespace App\Tokovoucher;
 
-use App\Exceptions\FailedCreateTransactionException;
-use App\Exceptions\ProductNotFoundException;
+use App\Helpers\ResponseCode;
 use App\Models\TokovoucherProduct;
-use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Http;
 
 trait TokoVoucher
@@ -24,12 +24,12 @@ trait TokoVoucher
                     "kode" => $productCode
                 ])->get("/produk/code")
                 ->throw();
-        } catch (ConnectException) {
-            throw new ProductNotFoundException();
-        }
-
-        if (!$res->ok()) {
-            throw new FailedCreateTransactionException($res);
+        } catch (RequestException) {
+            throw new HttpResponseException($this->base(
+                success: false,
+                code: ResponseCode::HTTP_INTERNAL_SERVER_ERROR,
+                message: "Something Wrong"
+            ));
         }
 
         $data = collect($res->collect()["data"])->filter(function ($val) use ($productCode) {

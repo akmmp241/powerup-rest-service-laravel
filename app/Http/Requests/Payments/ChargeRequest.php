@@ -17,6 +17,7 @@ class ChargeRequest extends FormRequest
     public function rules(): array
     {
         return [
+            "operator_id" => ["required"],
             "product_code" => ["required"],
             "destination" => ["required"],
             "server_id" => [],

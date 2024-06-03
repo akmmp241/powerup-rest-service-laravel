@@ -36,9 +36,7 @@ Route::middleware('guest')->group(function () {
 
     });
 
-    Route::prefix('/payments')->group(function () {
-        Route::get('/methods', [PaymentPageController::class, 'getPaymentMethods']);
-    });
+    Route::get('/payments/methods', [PaymentPageController::class, 'getPaymentMethods']);
 
     Route::prefix('/products')->group(function () {
         Route::get('/home/banners', [HomepageController::class, 'getHomeBanners']);
@@ -51,7 +49,10 @@ Route::middleware('guest')->group(function () {
         Route::get('', [ProductsController::class, 'getProducts']);
     });
 
-    Route::post("/transaction/charge", [PaymentController::class, 'charge']);
+    Route::prefix("/transaction")->group(function () {
+        Route::post("/charge", [PaymentController::class, 'charge']);
+        Route::get("/{transactionId}", [PaymentController::class, "getTransaction"]);
+    });
 });
 
 Route::middleware('auth')->group(function () {

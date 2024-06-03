@@ -14,8 +14,11 @@ class Transaction extends Model
 
     protected $fillable = [
         "id",
+        "xendit_ref_id",
+        "tokovoucher_ref_id",
         "user_id",
         "email",
+        "operator_id",
         "product_code",
         "product_name",
         "destination",
@@ -23,6 +26,13 @@ class Transaction extends Model
         "payment_method",
         "total",
         "status",
+        "paid_at",
         "failure_code",
+    ];
+
+    protected $casts = [
+        "paid_at" => "datetime",
+        "created_at" => "datetime",
+        "updated_at" => "datetime",
     ];
 }

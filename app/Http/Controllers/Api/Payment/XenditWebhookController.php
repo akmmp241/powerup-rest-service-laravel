@@ -29,7 +29,6 @@ class XenditWebhookController extends Controller
 
     public function paymentSucceeded(Request $request): JsonResponse
     {
-        Log::info($request);
         $payload = $request->get("data");
 
         try {

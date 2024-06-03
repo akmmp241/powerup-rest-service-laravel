@@ -4,6 +4,7 @@ namespace App\Services\Payment;
 
 use App\Exceptions\FailedCreateTransactionException;
 use App\Models\Transaction;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Auth;
@@ -46,6 +47,7 @@ class XenditChargeService
         $transaction->id = $this->transactionId;
         $transaction->user_id = Auth::check() ? Auth::id() : null;
         $transaction->email = $data["email"];
+        $transaction->operator_id = $data["operator_id"];
         $transaction->product_code = $data["product_code"];
         $transaction->product_name = $data["product_name"];
         $transaction->destination = $data["destination"];
@@ -87,7 +89,6 @@ class XenditChargeService
 
         // if Payment Method is Qr
         if ($channelCode === QRCodeChannelCode::QRIS) {
-            Log::info("this");
             return $this->qrPayload();
         }
 
@@ -107,7 +108,7 @@ class XenditChargeService
             "virtual_account" => [
                 "channel_code" => $channelCode,
                 "channel_properties" => [
-                    "customer_name" => Auth::check() ? Auth::user()->name : "You must login to set your name"
+                    "customer_name" => Auth::check() ? Auth::user()->name : "default"
                 ]
             ]
         ];
@@ -121,7 +122,7 @@ class XenditChargeService
             ];
         } else {
             $channelProperties = [
-                "success_return_url" => "https://example.com"
+                "success_return_url" => env('CLIENT_URL') . "/transaction/$this->transactionId"
             ];
         }
 
@@ -173,5 +174,40 @@ class XenditChargeService
             "created_at" => $transaction->created_at,
             "updated_at" => $transaction->updated_at
         ];
+    }
+
+    public function getTransaction(): array
+    {
+        try {
+            $res = Http::asJson()->timeout(15)->retry(3, 500)->withHeaders([
+                "Authorization" => "Basic " . base64_encode(env('XENDIT_API_KEY') . ':'),
+            ])->accept("application/json")
+                ->contentType("application/json")
+                ->baseUrl(config("xendit.base-url"))
+                ->get("/payment_requests/" . $this->transactionId)
+                ->throw();
+
+            return $res->json();
+        } catch (RequestException $e) {
+            Log::info($e->response->json());
+            throw new FailedCreateTransactionException($e->response);
+        }
+    }
+
+    public function updateIfChange(Transaction|Model $transaction, ?array $payload): void
+    {
+        if (!$payload) return;
+
+        switch ($payload["status"]) {
+            case "SUCCEED":
+                $transaction->status = "PAID";
+                $transaction->save();
+                break;
+            case "FAILED":
+                $transaction->status = "FAILED";
+                $transaction->failure_code = $payload["failure_code"];
+                $transaction->save();
+                break;
+        }
     }
 }
