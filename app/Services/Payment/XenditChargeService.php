@@ -55,6 +55,8 @@ class XenditChargeService
         $transaction->payment_method = $data["channel_code"];
         $transaction->total = $data["total"];
         $transaction->status = strtoupper("pending");
+        $transaction->setCreatedAt($data["created_at"]);
+        $transaction->setUpdatedAt($data["created_at"]);
 
         return $transaction;
     }
@@ -70,7 +72,6 @@ class XenditChargeService
                 ->post("/payment_requests", $this->requestPayload)
                 ->throw();
         } catch (RequestException $e) {
-            Log::info($e->response->json());
             throw new FailedCreateTransactionException($e->response);
         }
     }

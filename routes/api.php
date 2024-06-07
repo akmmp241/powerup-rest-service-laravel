@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\ResponseCode;
 use App\Http\Controllers\Api\AuthenticationController;
 use App\Http\Controllers\Api\Payment\PaymentController;
 use App\Http\Controllers\Api\Payment\PaymentPageController;
@@ -7,9 +8,14 @@ use App\Http\Controllers\Api\Payment\TokovoucherWebhookController;
 use App\Http\Controllers\Api\Payment\XenditWebhookController;
 use App\Http\Controllers\Api\Products\HomepageController;
 use App\Http\Controllers\Api\Products\ProductsController;
+use App\Http\Controllers\Api\Simulation\SimulatePaymentController;
+use App\Http\Controllers\Api\Transaction\TransactionController;
 use App\Http\Middleware\AuthorizeTokoVoucherWebhook;
 use App\Http\Middleware\AuthorizeXenditWebhook;
+use App\Http\Middleware\IsAuthorizeUserMiddleware;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Response;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,56 +28,66 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/scrap', [ProductsController::class, 'scrapOperator']);
-Route::post('/scrap', [ProductsController::class, 'scrapTypes']);
+Route::fallback(function () {
+    throw new HttpResponseException(Response::json([
+        "success" => false,
+        "status_code" => ResponseCode::HTTP_NOT_FOUND,
+        "message" => "Route Not Found"
+    ])->setStatusCode(ResponseCode::HTTP_NOT_FOUND));
+});
 
-Route::middleware('guest')->group(function () {
-    Route::prefix('/auth')->group(function () {
-        Route::post('/register', [AuthenticationController::class, 'register']);
-        Route::post('/login', [AuthenticationController::class, 'login']);
+Route::get('/payments/methods', [PaymentPageController::class, 'getPaymentMethods']);
 
-        Route::post('/forget-password', [AuthenticationController::class, 'sendForgetPassword']);
-        Route::post('/reset-password', [AuthenticationController::class, 'getIdForResetPassword']);
-        Route::patch('/reset-password', [AuthenticationController::class, 'resetPassword']);
-
+Route::prefix('/products')->group(function () {
+    Route::controller(HomepageController::class)->group(function () {
+        Route::get('/home/banners', 'getHomeBanners');
+        Route::get('/populars', 'getPopularProducts');
+        Route::get('/promos', 'getPromos');
     });
-
-    Route::get('/payments/methods', [PaymentPageController::class, 'getPaymentMethods']);
-
-    Route::prefix('/products')->group(function () {
-        Route::get('/home/banners', [HomepageController::class, 'getHomeBanners']);
-        Route::get('/populars', [HomepageController::class, 'getPopularProducts']);
-        Route::get('/promos', [HomepageController::class, 'getPromos']);
-        Route::get('/categories', [ProductsController::class, 'getCategories']);
-        Route::get('/operators', [ProductsController::class, 'getOperators']);
-        Route::get('/operators/{id}', [ProductsController::class, 'getSingleOperator']);
-        Route::get('/types', [ProductsController::class, 'getTypes']);
-        Route::get('', [ProductsController::class, 'getProducts']);
-    });
-
-    Route::prefix("/transaction")->group(function () {
-        Route::post("/charge", [PaymentController::class, 'charge']);
-        Route::get("/{transactionId}", [PaymentController::class, "getTransaction"]);
+    Route::controller(ProductsController::class)->group(function () {
+        Route::get('/categories', 'getCategories');
+        Route::get('/operators', 'getOperators');
+        Route::get('/operators/{id}', 'getSingleOperator');
+        Route::get('/types', 'getTypes');
+        Route::get('', 'getProducts');
     });
 });
 
-Route::middleware('auth')->group(function () {
-    Route::prefix('/auth')->group(function () {
-        Route::get('/user', [AuthenticationController::class, 'user']);
-        Route::get('/send-verification', [AuthenticationController::class, 'sendVerification']);
-        Route::post('/verify', [AuthenticationController::class, 'verify']);
+Route::prefix("/transaction")->group(function () {
+    Route::middleware([AuthorizeXenditWebhook::class])->controller(XenditWebhookController::class)->group(function () {
+        Route::post("/success", 'paymentSucceeded');
+        Route::post("/failed", 'paymentFailed');
+        Route::post("/pending", 'paymentPending');
+        Route::post('/channel-status', 'channelStatus');
     });
 
-    Route::prefix('/transaction')->group(function () {
-        Route::post('/ewallet', [PaymentController::class, 'charge']);
+    Route::post("/status", [TokovoucherWebhookController::class, 'handle'])->middleware([AuthorizeTokoVoucherWebhook::class]);
+
+    Route::get('/simulate', [SimulatePaymentController::class, 'simulate']);
+
+    Route::controller(PaymentController::class)->group(function () {
+        Route::post("/charge", 'charge');
+        Route::get("/{transactionId}", "getTransaction");
+    });
+
+    Route::post('', [TransactionController::class, 'getTransactions']);
+});
+
+Route::controller(AuthenticationController::class)->prefix('/auth')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::post('/register', 'register');
+        Route::post('/login', 'login');
+        Route::post('/forget-password', 'sendForgetPassword');
+        Route::post('/reset-password', 'getIdForResetPassword');
+        Route::patch('/reset-password', 'resetPassword');
+    });
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/user', 'user');
+        Route::get('/send-verification', 'sendVerification');
+        Route::post('/verify', 'verify');
     });
 });
 
-Route::middleware([AuthorizeXenditWebhook::class])->group(function () {
-    Route::post("/transaction/success", [XenditWebhookController::class, 'paymentSucceeded']);
-    Route::post("/transaction/failed", [XenditWebhookController::class, 'paymentFailed']);
-    Route::post("/transaction/pending", [XenditWebhookController::class, 'paymentPending']);
-    Route::post('/transaction/channel-status', [XenditWebhookController::class, 'channelStatus']);
-});
-
-Route::post("/transaction/status", [TokovoucherWebhookController::class, 'handle'])->middleware([AuthorizeTokoVoucherWebhook::class]);
+//Route::get('/scrap', [ProductsController::class, 'scrapOperator']);
+//Route::post('/scrap', [ProductsController::class, 'scrapTypes']);

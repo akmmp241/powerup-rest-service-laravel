@@ -18,6 +18,7 @@ use App\Models\Type;
 use App\Traits\Responses;
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -75,8 +76,6 @@ class ProductsController extends Controller
     {
         $typeId = $request->validated()["type_id"];
 
-//        $products = Product::query()->with(["type"])->where("type_id", $typeId)->get();
-
         try {
             $res = Http::withHeaders([
                 "Accept" => "application/json"
@@ -87,8 +86,12 @@ class ProductsController extends Controller
                     "member_code" => env("TOKOVOUCHER_MEMBER_CODE"),
                     "signature" => env("TOKOVOUCHER_SIGNATURE"),
                     "id_jenis" => $typeId
-                ])->get("/member/produk/list");
-        } catch (ConnectException) {
+                ])->get("/member/produk/list")
+                ->throw();
+
+            if ($res->json()["status"] === 0) throw new ProductNotFoundException();
+
+        } catch (RequestException $e) {
             throw new ProductNotFoundException();
         }
 

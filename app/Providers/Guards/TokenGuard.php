@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use function PHPUnit\Framework\isEmpty;
 
 class TokenGuard implements Guard
 {
@@ -74,6 +75,14 @@ class TokenGuard implements Guard
 
     public function check(): bool
     {
-        return !is_null($this->user());
+        if ($this->user != null) {
+            return true;
+        }
+
+        $token = $this->request->header("POWERUP-API-KEY");
+        if (!$token) return false;
+
+        $user = $this->provider->retrieveByCredentials(["personal_token" => $token]);
+        return $user !== null;
     }
 }

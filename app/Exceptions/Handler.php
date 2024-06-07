@@ -40,8 +40,16 @@ class Handler extends ExceptionHandler
         $this->renderable(function (FailedCreateTransactionException $e, Request $request) {
             throw new HttpResponseException($this->base(
                 success: false,
-                code: 500,
+                code: ResponseCode::HTTP_INTERNAL_SERVER_ERROR,
                 message: $e->getResponse()->json()["message"]
+            ));
+        });
+
+        $this->renderable(function (TransactionNotFoundException $e) {
+            throw new HttpResponseException($this->base(
+                success: false,
+                code: ResponseCode::HTTP_NOT_FOUND,
+                message: "Transaction Not Found"
             ));
         });
     }

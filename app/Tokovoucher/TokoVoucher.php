@@ -2,6 +2,7 @@
 
 namespace App\Tokovoucher;
 
+use App\Exceptions\TransactionNotFoundException;
 use App\Helpers\ResponseCode;
 use App\Models\TokovoucherProduct;
 use GuzzleHttp\Exception\RequestException;
@@ -31,6 +32,8 @@ trait TokoVoucher
                 message: "Something Wrong"
             ));
         }
+
+        if ($res->json()["status"] === 0) throw new TransactionNotFoundException();
 
         $data = collect($res->collect()["data"])->filter(function ($val) use ($productCode) {
             return $val["code"] === $productCode;

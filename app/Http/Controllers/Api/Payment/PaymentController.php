@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Payment;
 
+use App\Exceptions\TransactionNotFoundException;
 use App\Helpers\ResponseCode;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Payments\ChargeRequest;
@@ -13,6 +14,8 @@ use App\Services\Payment\XenditChargeService;
 use App\Tokovoucher\TokoVoucher;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 
 class PaymentController extends Controller
@@ -32,9 +35,13 @@ class PaymentController extends Controller
     {
         $data = $request->validated();
         $product = $this->getProduct($data["product_code"]);
+        $timestamp = Date::now();
 
         $data["product_name"] = $product->name;
-        $transactionId = Str::random(40);
+        $data["created_at"] = $timestamp->format("Y-m-d H:i:s");
+        $data["updated_at"] = $timestamp->format("Y-m-d H:i:s");
+
+        $transactionId = "POWER-" . $timestamp->format("dmY")  . $timestamp->format("His")  . strtoupper(Str::random(5)) . "-UP";
 
         // set the transaction ID
         $this->xenditChargeService->setTransactionId($transactionId);
@@ -59,26 +66,20 @@ class PaymentController extends Controller
         $responsePayload = $this->xenditChargeService->createResponsePayload($transaction);
 
         return $this->baseWithData(
-            true,
-            ResponseCode::HTTP_CREATED,
-            "Success create Transaction",
-            $responsePayload
+            success: true,
+            code: ResponseCode::HTTP_CREATED,
+            message: "Success create Transaction",
+            data: $responsePayload
         );
     }
 
     public function getTransaction(string $transactionId): JsonResponse
     {
         $transaction = Transaction::query()->where("id", $transactionId)->first();
-        if (!$transaction) throw new HttpResponseException(
-            $this->base(false, ResponseCode::HTTP_NOT_FOUND, "Transaction Not Found")
-        );
-
-        $product = $this->getProduct($transaction->product_code);
+        if (!$transaction) throw new TransactionNotFoundException();
 
         $operator = Operator::query()->where("id", $transaction->operator_id)->first();
-        if (!$operator) throw new HttpResponseException(
-            $this->base(false, ResponseCode::HTTP_NOT_FOUND, "Operator Not Found")
-        );
+        if (!$operator) throw new TransactionNotFoundException();
 
         $this->xenditChargeService->setTransactionId($transaction->xendit_ref_id);
         $transactionXendit = $this->xenditChargeService->getTransaction();
@@ -92,6 +93,8 @@ class PaymentController extends Controller
         $this->tokoVoucherChargeService->setTransactionId($transaction->id);
         $transactionTokoVoucher = $this->tokoVoucherChargeService->getTransaction();
         $this->tokoVoucherChargeService->updateIfChange($transaction, $transactionTokoVoucher);
+
+        $product = $this->getProduct($transaction->product_code);
 
         $transactionPayload = new TransactionResource($transaction);
         $transactionPayload->setProduct($product);

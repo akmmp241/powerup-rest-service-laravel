@@ -12,6 +12,8 @@ class Transaction extends Model
     protected $primaryKey = 'id';
     protected $keyType = 'string';
 
+    public $timestamps = false;
+
     protected $fillable = [
         "id",
         "xendit_ref_id",
@@ -28,6 +30,8 @@ class Transaction extends Model
         "status",
         "paid_at",
         "failure_code",
+        "created_at",
+        "updated_at"
     ];
 
     protected $casts = [
